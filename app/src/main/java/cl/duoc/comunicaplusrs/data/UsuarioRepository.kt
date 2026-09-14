@@ -4,8 +4,10 @@ import cl.duoc.comunicaplusrs.model.Usuario
 
 object UsuarioRepository {
 
-    private const val MAX_USUARIOS = 5
+    const val MAX_USUARIOS = 5
 
+    // Se limita el registro a un máximo de 5 usuarios para cumplir con la actividad.
+    // Los espacios vacíos del array quedan en null hasta que alguien se registra.
     private val usuarios: Array<Usuario?> = arrayOfNulls(MAX_USUARIOS)
 
     private var cantidadUsuarios = 0
@@ -22,6 +24,7 @@ object UsuarioRepository {
             return ResultadoRegistro.CORREO_EXISTENTE
         }
 
+        // Si el array ya está lleno no se agrega otro usuario.
         if (cantidadUsuarios >= MAX_USUARIOS) {
             return ResultadoRegistro.LIMITE_ALCANZADO
         }
@@ -37,6 +40,8 @@ object UsuarioRepository {
         password: String
     ): Boolean {
 
+        // filterNotNull() deja solo los usuarios registrados y
+        // any { } revisa con una lambda si alguno coincide con el correo y la contraseña.
         return usuarios
             .filterNotNull()
             .any {
@@ -47,6 +52,8 @@ object UsuarioRepository {
             }
     }
 
+    // Se busca el usuario dentro de los registros guardados en memoria.
+    // find { } devuelve el primero que cumple la condición o null si no existe.
     fun buscarPorCorreo(correo: String): Usuario? {
 
         return usuarios
