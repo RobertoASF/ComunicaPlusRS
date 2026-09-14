@@ -1,5 +1,6 @@
 package cl.duoc.comunicaplusrs.ui.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -18,6 +19,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedCard
@@ -33,6 +35,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -600,42 +603,36 @@ fun RegisterScreen(
 
         } else {
 
-            usuariosRegistrados
-                .forEachIndexed { index, usuario ->
+            // Tabla con columnas: una fila de encabezado y una fila por cada usuario del array.
+            OutlinedCard(
+                modifier = Modifier.fillMaxWidth()
+            ) {
 
-                    OutlinedCard(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(
-                                vertical = 4.dp
+                FilaTabla(
+                    celdas = listOf(
+                        "N°",
+                        "Nombre",
+                        "Correo",
+                        "Comunicación"
+                    ),
+                    esEncabezado = true
+                )
+
+                usuariosRegistrados
+                    .forEachIndexed { index, usuario ->
+
+                        HorizontalDivider()
+
+                        FilaTabla(
+                            celdas = listOf(
+                                "${index + 1}",
+                                usuario.nombre,
+                                usuario.correo,
+                                usuario.tipoComunicacion
                             )
-                    ) {
-
-                        Column(
-                            modifier =
-                            Modifier.padding(12.dp)
-                        ) {
-
-                            Text(
-                                text =
-                                "${index + 1}. ${usuario.nombre}",
-                                fontWeight =
-                                FontWeight.Bold
-                            )
-
-                            Text(
-                                text = usuario.correo
-                            )
-
-                            Text(
-                                text =
-                                "Comunicación: " +
-                                        usuario.tipoComunicacion,
-                                fontSize = 13.sp
-                            )
-                        }
+                        )
                     }
-                }
+            }
         }
 
         Spacer(
@@ -654,6 +651,48 @@ fun RegisterScreen(
         Spacer(
             modifier = Modifier.height(32.dp)
         )
+    }
+}
+
+// Ancho relativo de cada columna para que la tabla se ajuste a la pantalla.
+private val pesosColumnas = listOf(0.5f, 1.2f, 1.8f, 1.3f)
+
+@Composable
+private fun FilaTabla(
+    celdas: List<String>,
+    esEncabezado: Boolean = false
+) {
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(
+                if (esEncabezado) {
+                    MaterialTheme.colorScheme.primaryContainer
+                } else {
+                    Color.Transparent
+                }
+            )
+            .padding(8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+
+        // zip junta cada texto con el peso de su columna.
+        celdas
+            .zip(pesosColumnas)
+            .forEach { (texto, peso) ->
+
+                Text(
+                    text = texto,
+                    modifier = Modifier.weight(peso),
+                    fontSize = 12.sp,
+                    fontWeight = if (esEncabezado) {
+                        FontWeight.Bold
+                    } else {
+                        FontWeight.Normal
+                    }
+                )
+            }
     }
 }
 

@@ -6,7 +6,7 @@ object UsuarioRepository {
 
     const val MAX_USUARIOS = 5
 
-    // Se limita el registro a un máximo de 5 usuarios para cumplir con la actividad.
+    // Se limita el registro a un máximo de 5 usuarios
     // Los espacios vacíos del array quedan en null hasta que alguien se registra.
     private val usuarios: Array<Usuario?> = arrayOfNulls(MAX_USUARIOS)
 

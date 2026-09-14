@@ -1,7 +1,6 @@
 package cl.duoc.comunicaplusrs.utils
 
-// Esta extensión se usa para mantener la validación del correo en un solo lugar.
-// Revisa que tenga algo antes del @ y un punto en la parte del dominio.
+
 fun String.esCorreoValido(): Boolean {
     return isNotBlank() &&
             contains("@") &&

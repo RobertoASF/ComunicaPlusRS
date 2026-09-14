@@ -33,7 +33,8 @@ import cl.duoc.comunicaplusrs.data.UsuarioRepository
 @Composable
 fun LoginScreen(
     onGoToRegister: () -> Unit,
-    onGoToRecovery: () -> Unit
+    onGoToRecovery: () -> Unit,
+    onLoginSuccess: () -> Unit
 ) {
     var correo by remember {
         mutableStateOf("")
@@ -72,7 +73,7 @@ fun LoginScreen(
         )
 
         Text(
-            text = "Comunicación más accesible (sumativa 1)",
+            text = "Comunicación más accesible (sumativa 2)",
             fontSize = 18.sp,
             textAlign = TextAlign.Center
         )
@@ -139,8 +140,9 @@ fun LoginScreen(
                         correo,
                         password
                     ) -> {
-                        mensaje = "Inicio de sesión correcto."
-                        esError = false
+                        // Si las credenciales son correctas se pasa a la pantalla Home.
+                        mensaje = ""
+                        onLoginSuccess()
                     }
 
                     else -> {
