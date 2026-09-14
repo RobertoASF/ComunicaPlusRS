@@ -26,6 +26,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cl.duoc.comunicaplusrs.data.UsuarioRepository
+import cl.duoc.comunicaplusrs.utils.esCorreoValido
 
 @Composable
 fun RecoveryScreen(
@@ -96,6 +97,12 @@ fun RecoveryScreen(
                 if (correo.isBlank()) {
 
                     mensaje = "Debe ingresar un correo."
+                    encontrado = false
+
+                } else if (!correo.trim().esCorreoValido()) {
+
+                    // Se reutiliza la misma extensión del registro para revisar el formato.
+                    mensaje = "Ingresa un correo válido."
                     encontrado = false
 
                 } else {

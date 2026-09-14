@@ -41,6 +41,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cl.duoc.comunicaplusrs.data.UsuarioRepository
 import cl.duoc.comunicaplusrs.model.Usuario
+import cl.duoc.comunicaplusrs.utils.esCorreoValido
+import cl.duoc.comunicaplusrs.utils.validarCampo
+import cl.duoc.comunicaplusrs.utils.validarPassword
 
 @Composable
 fun RegisterScreen(
@@ -421,9 +424,10 @@ fun RegisterScreen(
         Button(
             onClick = {
 
+                // Las validaciones usan validarCampo con una lambda distinta para cada caso.
                 when {
 
-                    nombre.isBlank() -> {
+                    !validarCampo(nombre) { it.isNotEmpty() } -> {
 
                         mensaje =
                             "Debes ingresar tu nombre."
@@ -431,7 +435,7 @@ fun RegisterScreen(
                         registroCorrecto = false
                     }
 
-                    correo.isBlank() -> {
+                    !validarCampo(correo) { it.isNotEmpty() } -> {
 
                         mensaje =
                             "Debes ingresar tu correo."
@@ -439,7 +443,8 @@ fun RegisterScreen(
                         registroCorrecto = false
                     }
 
-                    !correo.contains("@") -> {
+                    // Valida que el correo tenga un formato básico antes de registrar al usuario.
+                    !validarCampo(correo) { it.esCorreoValido() } -> {
 
                         mensaje =
                             "Ingresa un correo válido."
@@ -447,7 +452,7 @@ fun RegisterScreen(
                         registroCorrecto = false
                     }
 
-                    password.length < 4 -> {
+                    !validarPassword(password) -> {
 
                         mensaje =
                             "La contraseña debe tener al menos 4 caracteres."
@@ -465,65 +470,77 @@ fun RegisterScreen(
 
                     else -> {
 
-                        val usuario = Usuario(
-                            nombre = nombre.trim(),
-                            correo = correo.trim(),
-                            password = password,
-                            tipoComunicacion =
-                            tipoComunicacion,
-                            preferenciaInterfaz =
-                            preferenciaInterfaz,
-                            aceptaTerminos =
-                            aceptaTerminos,
-                            opcionesAccesibilidad =
-                            opcionesSeleccionadas
-                        )
+                        // Si ocurre un problema durante el registro se muestra un mensaje 
+                        // en vez de que la app se cierre (por ejemplo, un error al guardar en el array).
+                        try {
 
-                        when (
-                            UsuarioRepository
-                                .registrarUsuario(usuario)
-                        ) {
+                            val usuario = Usuario(
+                                nombre = nombre.trim(),
+                                correo = correo.trim(),
+                                password = password,
+                                tipoComunicacion =
+                                tipoComunicacion,
+                                preferenciaInterfaz =
+                                preferenciaInterfaz,
+                                aceptaTerminos =
+                                aceptaTerminos,
+                                opcionesAccesibilidad =
+                                opcionesSeleccionadas
+                            )
 
-                            UsuarioRepository
-                                .ResultadoRegistro
-                                .EXITO -> {
+                            when (
+                                UsuarioRepository
+                                    .registrarUsuario(usuario)
+                            ) {
 
-                                mensaje =
-                                    "Usuario registrado correctamente."
+                                UsuarioRepository
+                                    .ResultadoRegistro
+                                    .EXITO -> {
 
-                                registroCorrecto = true
+                                    mensaje =
+                                        "Usuario registrado correctamente."
 
-                                nombre = ""
-                                correo = ""
-                                password = ""
+                                    registroCorrecto = true
 
-                                aceptaTerminos = false
+                                    nombre = ""
+                                    correo = ""
+                                    password = ""
 
-                                opcionesSeleccionadas =
-                                    emptySet()
+                                    aceptaTerminos = false
 
-                                actualizacionLista++
+                                    opcionesSeleccionadas =
+                                        emptySet()
+
+                                    actualizacionLista++
+                                }
+
+                                UsuarioRepository
+                                    .ResultadoRegistro
+                                    .CORREO_EXISTENTE -> {
+
+                                    mensaje =
+                                        "El correo ya se encuentra registrado."
+
+                                    registroCorrecto = false
+                                }
+
+                                UsuarioRepository
+                                    .ResultadoRegistro
+                                    .LIMITE_ALCANZADO -> {
+
+                                    mensaje =
+                                        "Se alcanzó el máximo de ${UsuarioRepository.MAX_USUARIOS} usuarios."
+
+                                    registroCorrecto = false
+                                }
                             }
 
-                            UsuarioRepository
-                                .ResultadoRegistro
-                                .CORREO_EXISTENTE -> {
+                        } catch (e: Exception) {
 
-                                mensaje =
-                                    "El correo ya se encuentra registrado."
+                            mensaje =
+                                "Ocurrió un error al registrar. Intenta nuevamente."
 
-                                registroCorrecto = false
-                            }
-
-                            UsuarioRepository
-                                .ResultadoRegistro
-                                .LIMITE_ALCANZADO -> {
-
-                                mensaje =
-                                    "Se alcanzó el máximo de 5 usuarios."
-
-                                registroCorrecto = false
-                            }
+                            registroCorrecto = false
                         }
                     }
                 }
@@ -563,7 +580,7 @@ fun RegisterScreen(
         Text(
             text =
             "Usuarios registrados " +
-                    "(${usuariosRegistrados.size}/5)",
+                    "(${usuariosRegistrados.size}/${UsuarioRepository.MAX_USUARIOS})",
             fontWeight = FontWeight.Bold,
             fontSize = 18.sp,
             modifier = Modifier.fillMaxWidth()
