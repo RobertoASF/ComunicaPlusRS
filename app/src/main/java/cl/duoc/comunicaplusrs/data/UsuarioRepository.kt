@@ -1,80 +1,64 @@
 package cl.duoc.comunicaplusrs.data
 
 import cl.duoc.comunicaplusrs.model.Usuario
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.dataObjects
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withTimeout
 
-object UsuarioRepository {
+// CRUD del perfil del usuario en Firestore.
+interface UsuarioRepository {
 
-    const val MAX_USUARIOS = 5
+    // Crea el documento o lo reemplaza si ya existe.
+    suspend fun guardar(usuario: Usuario)
 
-    // Se limita el registro a un máximo de 5 usuarios
-    // Los espacios vacíos del array quedan en null hasta que alguien se registra.
-    private val usuarios: Array<Usuario?> = arrayOfNulls(MAX_USUARIOS)
+    fun escuchar(uid: String): Flow<Usuario?>
 
-    private var cantidadUsuarios = 0
+    // Borra el perfil y todo lo que el usuario guardó.
+    suspend fun eliminar(uid: String)
+}
 
-    enum class ResultadoRegistro {
-        EXITO,
-        CORREO_EXISTENTE,
-        LIMITE_ALCANZADO
-    }
+class FirestoreUsuarioRepository(
+    private val db: FirebaseFirestore
+) : UsuarioRepository {
 
-    fun registrarUsuario(usuario: Usuario): ResultadoRegistro {
+    private fun documento(uid: String) =
+        db.collection(COLECCION_USUARIOS).document(uid)
 
-        if (buscarPorCorreo(usuario.correo) != null) {
-            return ResultadoRegistro.CORREO_EXISTENTE
+    override suspend fun guardar(usuario: Usuario) {
+        withTimeout(TIEMPO_MAXIMO_MS) {
+            documento(usuario.id).set(usuario).await()
         }
+    }
 
-        // Si el array ya está lleno no se agrega otro usuario.
-        if (cantidadUsuarios >= MAX_USUARIOS) {
-            return ResultadoRegistro.LIMITE_ALCANZADO
+    // dataObjects() entrega un Flow que se actualiza cada vez que cambia el documento.
+    override fun escuchar(uid: String): Flow<Usuario?> {
+        return documento(uid).dataObjects<Usuario>()
+    }
+
+    override suspend fun eliminar(uid: String) {
+        val perfil = documento(uid)
+
+        withTimeout(TIEMPO_MAXIMO_MS) {
+            // Firestore no borra las subcolecciones al borrar el documento,
+            // por eso se eliminan una por una.
+            SUBCOLECCIONES.forEach { nombre ->
+                val documentos = perfil.collection(nombre).get().await()
+                val batch = db.batch()
+                documentos.forEach { batch.delete(it.reference) }
+                batch.commit().await()
+            }
+            perfil.delete().await()
         }
-
-        usuarios[cantidadUsuarios] = usuario
-        cantidadUsuarios++
-
-        return ResultadoRegistro.EXITO
     }
 
-    fun autenticar(
-        correo: String,
-        password: String
-    ): Boolean {
-
-        // filterNotNull() deja solo los usuarios registrados y
-        // any { } revisa con una lambda si alguno coincide con el correo y la contraseña.
-        return usuarios
-            .filterNotNull()
-            .any {
-                it.correo.equals(
-                    correo.trim(),
-                    ignoreCase = true
-                ) && it.password == password
-            }
-    }
-
-    // Se busca el usuario dentro de los registros guardados en memoria.
-    // find { } devuelve el primero que cumple la condición o null si no existe.
-    fun buscarPorCorreo(correo: String): Usuario? {
-
-        return usuarios
-            .filterNotNull()
-            .find {
-                it.correo.equals(
-                    correo.trim(),
-                    ignoreCase = true
-                )
-            }
-    }
-
-    fun obtenerUsuarios(): List<Usuario> {
-        return usuarios.filterNotNull()
-    }
-
-    fun cantidadUsuarios(): Int {
-        return cantidadUsuarios
-    }
-
-    fun quedanCupos(): Boolean {
-        return cantidadUsuarios < MAX_USUARIOS
+    companion object {
+        const val COLECCION_USUARIOS = "usuarios"
+        val SUBCOLECCIONES = listOf("frases", "conversaciones", "dispositivos")
     }
 }
+
+// Si no hay internet Firestore deja la escritura pendiente y nunca responde,
+// así que se corta la espera para avisar al usuario.
+const val TIEMPO_MAXIMO_MS = 15_000L
