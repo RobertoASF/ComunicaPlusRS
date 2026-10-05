@@ -1,0 +1,63 @@
+rules_version = '2';
+
+// Reglas de seguridad de Cloud Firestore para ComunicaPlusRS.
+// Se copian en Firebase Console > Firestore Database > Reglas.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function haySesion() {
+      return request.auth != null;
+    }
+
+    function esDueno(uid) {
+      return haySesion() && request.auth.uid == uid;
+    }
+
+    // Texto no vacío y con largo máximo (igual que validarMensaje() en la app).
+    function textoValido(texto) {
+      return texto is string && texto.size() > 0 && texto.size() <= 200;
+    }
+
+    // Perfil del usuario: cada uno solo puede ver y cambiar su propio documento.
+    match /usuarios/{uid} {
+      allow read, delete: if esDueno(uid);
+
+      allow create, update: if esDueno(uid)
+        && request.resource.data.nombre is string
+        && request.resource.data.nombre.size() > 0
+        && request.resource.data.correo == request.auth.token.email;
+
+      // Frases guardadas en Escribir
+      match /frases/{fraseId} {
+        allow read, delete: if esDueno(uid);
+        allow create, update: if esDueno(uid)
+          && textoValido(request.resource.data.texto)
+          && request.resource.data.fecha is int;
+      }
+
+      // Historial de lo escuchado en Hablar
+      match /conversaciones/{conversacionId} {
+        allow read, delete: if esDueno(uid);
+        allow create, update: if esDueno(uid)
+          && request.resource.data.texto is string
+          && request.resource.data.texto.size() <= 2000
+          && request.resource.data.fecha is int;
+      }
+
+      // Ubicación de los teléfonos del usuario (Buscar dispositivo)
+      match /dispositivos/{dispositivoId} {
+        allow read, delete: if esDueno(uid);
+        allow create, update: if esDueno(uid)
+          && request.resource.data.latitud is number
+          && request.resource.data.longitud is number
+          && request.resource.data.latitud >= -90 && request.resource.data.latitud <= 90
+          && request.resource.data.longitud >= -180 && request.resource.data.longitud <= 180;
+      }
+    }
+
+    // Todo lo que no esté indicado arriba queda bloqueado.
+    match /{documento=**} {
+      allow read, write: if false;
+    }
+  }
+}

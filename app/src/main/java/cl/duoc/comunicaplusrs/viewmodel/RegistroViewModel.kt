@@ -68,7 +68,8 @@ class RegistroViewModel(
                 val usuario = Usuario(
                     id = uid,
                     nombre = nombre.trim(),
-                    correo = correo.trim(),
+                    // Firebase guarda el correo en minúsculas y las reglas lo comparan.
+                    correo = correo.trim().lowercase(),
                     tipoComunicacion = tipoComunicacion,
                     preferenciaInterfaz = preferenciaInterfaz,
                     aceptaTerminos = aceptaTerminos,
