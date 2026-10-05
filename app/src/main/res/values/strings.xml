@@ -1,3 +1,29 @@
 <resources>
     <string name="app_name">ComunicaPlusRS</string>
+
+    <!-- Buscar dispositivo -->
+    <string name="este_dispositivo">Este teléfono</string>
+    <string name="sin_ubicacion">Todavía no se ha guardado la ubicación de este teléfono.</string>
+    <string name="coordenadas_precision">%1$s (± %2$d m)</string>
+    <string name="actualizado_el">Actualizado el %1$s</string>
+    <string name="actualizar_ubicacion">Actualizar</string>
+    <string name="ver_mapa">Ver mapa</string>
+    <string name="buscando_ubicacion">Buscando ubicación</string>
+    <string name="mostrar_distancia">Mostrar distancia a mis otros teléfonos</string>
+    <string name="mis_otros_dispositivos">Mis otros dispositivos</string>
+    <string name="sin_otros_dispositivos">Aún no hay otros teléfonos. Inicia sesión en otro dispositivo y actualiza su ubicación para verlo aquí.</string>
+    <string name="sin_direccion">Dirección no disponible</string>
+    <string name="distancia_aproximada">A %1$s de este teléfono</string>
+    <string name="eliminar_dispositivo">Eliminar dispositivo</string>
+    <string name="confirmar_eliminar_dispositivo">¿Quieres quitar %1$s de tu lista de dispositivos?</string>
+    <string name="permiso_ubicacion_denegado">Sin el permiso de ubicación no se puede guardar dónde está este teléfono.</string>
+    <string name="cancelar">Cancelar</string>
+    <string name="eliminar">Eliminar</string>
+
+    <!-- Widget -->
+    <string name="widget_nombre">Acceso rápido ComunicaPlus</string>
+    <string name="widget_titulo">Comunica Plus RS</string>
+    <string name="widget_descripcion">Abre Escribir o Hablar directamente desde la pantalla de inicio.</string>
+    <string name="escribir">Escribir</string>
+    <string name="hablar">Hablar</string>
 </resources>
