@@ -19,3 +19,9 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# Firestore convierte los documentos a estas clases usando reflexión,
+# por eso no se deben renombrar ni eliminar al minificar.
+-keep class cl.duoc.comunicaplusrs.model.** { *; }
+-keepattributes Signature
+-keepattributes *Annotation*

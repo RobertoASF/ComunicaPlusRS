@@ -17,3 +17,7 @@
 *.aab
 local.properties
 ./idea
+# Firma de la app (no se sube al repositorio)
+keystore.properties
+*.jks
+*.keystore
