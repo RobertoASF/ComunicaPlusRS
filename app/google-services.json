@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "285373153581",
+    "project_id": "comunicaplusrs",
+    "storage_bucket": "comunicaplusrs.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:285373153581:android:395b6a48e3f693749813a4",
+        "android_client_info": {
+          "package_name": "cl.duoc.comunicaplusrs"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD6QxBl-hG46ySsiWEJFKJSZiAhVyulhjg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
