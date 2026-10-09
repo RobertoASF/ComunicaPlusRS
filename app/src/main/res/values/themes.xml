@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.ComunicaPlusRS" parent="android:Theme.Material.Light.NoActionBar" />
+    <!-- Tema Material 3 para las vistas XML del Fragment (Compose usa su propio tema) -->
+    <style name="Theme.ComunicaPlusRS" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/morado_principal</item>
+    </style>
 </resources>

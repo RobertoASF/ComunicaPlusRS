@@ -8,9 +8,11 @@ fun String.esCorreoValido(): Boolean {
             substringAfter("@").contains(".")
 }
 
-// La contraseña debe tener al menos 4 caracteres, igual que en la entrega anterior.
+// Firebase Authentication exige mínimo 6 caracteres (antes eran 4).
+const val LARGO_MINIMO_PASSWORD = 6
+
 fun validarPassword(password: String): Boolean {
-    return password.length >= 4
+    return password.length >= LARGO_MINIMO_PASSWORD
 }
 
 // Recibe una lambda con la regla que se quiere revisar,
@@ -20,4 +22,13 @@ fun validarCampo(
     validacion: (String) -> Boolean
 ): Boolean {
     return validacion(valor.trim())
+}
+
+// Largo máximo de las frases de Escribir, para que se lean bien en pantalla completa.
+const val LARGO_MAXIMO_MENSAJE = 200
+
+fun validarMensaje(texto: String): Boolean {
+    return validarCampo(texto) {
+        it.isNotEmpty() && it.length <= LARGO_MAXIMO_MENSAJE
+    }
 }
