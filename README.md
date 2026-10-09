@@ -4,6 +4,8 @@ Aplicación Android para personas con discapacidad auditiva. Permite escribir un
 
 Proyecto de la asignatura Desarrollo de Aplicaciones Móviles (DSY2204) - DUOC UC.
 
+**Descargar APK (v3.0):** https://github.com/RobertoASF/ComunicaPlusRS/releases/tag/v3.0 (Android 7.0 o superior)
+
 ## Pantallas
 
 | Pantalla | Qué hace |
