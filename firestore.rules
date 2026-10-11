@@ -18,6 +18,11 @@ service cloud.firestore {
       return texto is string && texto.size() > 0 && texto.size() <= 200;
     }
 
+    // Los mensajes antiguos no traen origen; si viene, solo puede ser uno de estos dos.
+    function origenValido(datos) {
+      return !('origen' in datos) || datos.origen in ['escuchado', 'escrito'];
+    }
+
     // Perfil del usuario: cada uno solo puede ver y cambiar su propio documento.
     match /usuarios/{uid} {
       allow read, delete: if esDueno(uid);
@@ -35,13 +40,14 @@ service cloud.firestore {
           && request.resource.data.fecha is int;
       }
 
-      // Historial de lo escuchado en Hablar
+      // Conversación de Hablar: lo escuchado y lo que el usuario respondió
       match /conversaciones/{conversacionId} {
         allow read, delete: if esDueno(uid);
         allow create, update: if esDueno(uid)
           && request.resource.data.texto is string
           && request.resource.data.texto.size() <= 2000
-          && request.resource.data.fecha is int;
+          && request.resource.data.fecha is int
+          && origenValido(request.resource.data);
       }
 
       // Ubicación de los teléfonos del usuario (Buscar dispositivo)

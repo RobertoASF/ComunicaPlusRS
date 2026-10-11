@@ -9,12 +9,13 @@ import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withTimeout
 
 // CRUD de textos del usuario. La misma clase sirve para las frases de
-// Escribir y para el historial de Hablar, solo cambia la subcolección.
+// Escribir y para la conversación de Hablar, solo cambia la subcolección.
 interface MensajeRepository {
 
     fun escuchar(uid: String): Flow<List<Mensaje>>
 
-    suspend fun agregar(uid: String, texto: String)
+    // origen solo se usa en conversaciones (ORIGEN_ESCUCHADO u ORIGEN_ESCRITO).
+    suspend fun agregar(uid: String, texto: String, origen: String = "")
 
     suspend fun actualizar(uid: String, id: String, texto: String)
 
@@ -39,13 +40,17 @@ class FirestoreMensajeRepository(
             .dataObjects<Mensaje>()
     }
 
-    override suspend fun agregar(uid: String, texto: String) {
-        val mensaje = Mensaje(
-            texto = texto.trim(),
-            fecha = System.currentTimeMillis()
-        )
+    override suspend fun agregar(uid: String, texto: String, origen: String) {
+        // Las frases no tienen origen, por eso el campo solo se agrega si viene.
+        val datos = buildMap {
+            put("texto", texto.trim())
+            put("fecha", System.currentTimeMillis())
+            if (origen.isNotBlank()) {
+                put("origen", origen)
+            }
+        }
         withTimeout(TIEMPO_MAXIMO_MS) {
-            coleccion(uid).add(mensaje).await()
+            coleccion(uid).add(datos).await()
         }
     }
 
