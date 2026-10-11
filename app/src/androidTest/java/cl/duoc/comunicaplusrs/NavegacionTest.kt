@@ -70,6 +70,22 @@ class NavegacionTest {
     }
 
     @Test
+    fun comoFunciona_abreElTutorialYElBotonAtrasVuelveAlLogin() {
+        composeRule.onNodeWithText("¿Cómo funciona la app?")
+            .performScrollTo()
+            .performClick()
+
+        composeRule.onNodeWithText("Bienvenido a Comunica Plus RS").assertIsDisplayed()
+
+        composeRule.onNodeWithText("SIGUIENTE").performClick()
+        composeRule.onNodeWithText("Escribir").assertIsDisplayed()
+
+        Espresso.pressBack()
+
+        composeRule.onNodeWithText("INICIAR SESIÓN").assertIsDisplayed()
+    }
+
+    @Test
     fun registroSinTerminos_muestraError() {
         composeRule.onNodeWithText("Crear una cuenta").performClick()
 

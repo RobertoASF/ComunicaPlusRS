@@ -35,6 +35,7 @@ class LoginScreenTest {
                 LoginScreen(
                     onGoToRegister = {},
                     onGoToRecovery = {},
+                    onVerAyuda = {},
                     onLoginSuccess = onLoginSuccess,
                     viewModel = LoginViewModel(authService)
                 )

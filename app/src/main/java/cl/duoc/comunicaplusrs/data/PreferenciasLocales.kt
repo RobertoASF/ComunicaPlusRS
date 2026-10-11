@@ -31,10 +31,18 @@ class PreferenciasLocales(context: Context) {
             putFloat(CLAVE_TAMANO_TEXTO, valor)
         }
 
+    // Para mostrar la invitación al tutorial solo la primera vez en este teléfono.
+    var tutorialVisto: Boolean
+        get() = prefs.getBoolean(CLAVE_TUTORIAL_VISTO, false)
+        set(valor) = prefs.edit {
+            putBoolean(CLAVE_TUTORIAL_VISTO, valor)
+        }
+
     companion object {
         private const val ARCHIVO = "comunicaplus_prefs"
         private const val CLAVE_ID_DISPOSITIVO = "id_dispositivo"
         private const val CLAVE_TAMANO_TEXTO = "tamano_texto_hablar"
+        private const val CLAVE_TUTORIAL_VISTO = "tutorial_visto"
         const val TAMANO_TEXTO_INICIAL = 28f
     }
 }

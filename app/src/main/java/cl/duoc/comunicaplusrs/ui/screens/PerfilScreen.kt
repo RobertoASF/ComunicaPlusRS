@@ -48,6 +48,7 @@ import cl.duoc.comunicaplusrs.viewmodel.PerfilViewModel
 fun PerfilScreen(
     viewModel: PerfilViewModel,
     onVolver: () -> Unit,
+    onAyuda: () -> Unit,
     onCuentaEliminada: () -> Unit
 ) {
     val usuario by viewModel.usuario.collectAsStateWithLifecycle()
@@ -88,7 +89,8 @@ fun PerfilScreen(
         topBar = {
             BarraSuperior(
                 titulo = "Mi perfil",
-                onVolver = onVolver
+                onVolver = onVolver,
+                onAyuda = onAyuda
             )
         }
     ) { padding ->

@@ -3,6 +3,7 @@ package cl.duoc.comunicaplusrs.ui.components
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.HelpOutline
 import androidx.compose.material.icons.filled.WifiOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -25,7 +27,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.LiveRegionMode
@@ -38,11 +39,14 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import cl.duoc.comunicaplusrs.utils.observarConexion
 
+// Si se pasa onAyuda aparece el botón "?" que abre el tutorial de esa pantalla.
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BarraSuperior(
     titulo: String,
-    onVolver: () -> Unit
+    onVolver: () -> Unit,
+    onAyuda: (() -> Unit)? = null,
+    acciones: @Composable RowScope.() -> Unit = {}
 ) {
     TopAppBar(
         title = {
@@ -57,6 +61,18 @@ fun BarraSuperior(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = "Volver"
                 )
+            }
+        },
+        actions = {
+            acciones()
+
+            if (onAyuda != null) {
+                IconButton(onClick = onAyuda) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.HelpOutline,
+                        contentDescription = "Ayuda"
+                    )
+                }
             }
         }
     )
@@ -152,42 +168,5 @@ fun AvisoSinConexion() {
                 fontWeight = FontWeight.Medium
             )
         }
-    }
-}
-
-@Composable
-fun FilaTabla(
-    celdas: List<String>,
-    pesos: List<Float>,
-    esEncabezado: Boolean = false
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(
-                if (esEncabezado) {
-                    MaterialTheme.colorScheme.primaryContainer
-                } else {
-                    Color.Transparent
-                }
-            )
-            .padding(8.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        // zip junta cada texto con el peso de su columna.
-        celdas
-            .zip(pesos)
-            .forEach { (texto, peso) ->
-                Text(
-                    text = texto,
-                    modifier = Modifier.weight(peso),
-                    fontSize = 13.sp,
-                    fontWeight = if (esEncabezado) {
-                        FontWeight.Bold
-                    } else {
-                        FontWeight.Normal
-                    }
-                )
-            }
     }
 }
