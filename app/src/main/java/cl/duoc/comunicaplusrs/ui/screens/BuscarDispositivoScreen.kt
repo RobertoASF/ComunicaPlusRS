@@ -13,13 +13,15 @@ import cl.duoc.comunicaplusrs.ui.fragments.BuscarDispositivoFragment
 // que se muestra dentro de Compose con AndroidFragment.
 @Composable
 fun BuscarDispositivoScreen(
-    onVolver: () -> Unit
+    onVolver: () -> Unit,
+    onAyuda: () -> Unit
 ) {
     Scaffold(
         topBar = {
             BarraSuperior(
                 titulo = "Buscar dispositivo",
-                onVolver = onVolver
+                onVolver = onVolver,
+                onAyuda = onAyuda
             )
         }
     ) { padding ->

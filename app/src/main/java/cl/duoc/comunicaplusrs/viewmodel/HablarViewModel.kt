@@ -8,7 +8,11 @@ import cl.duoc.comunicaplusrs.data.AuthService
 import cl.duoc.comunicaplusrs.data.MensajeRepository
 import cl.duoc.comunicaplusrs.data.ServiceLocator
 import cl.duoc.comunicaplusrs.model.Mensaje
+import cl.duoc.comunicaplusrs.model.ORIGEN_ESCRITO
+import cl.duoc.comunicaplusrs.model.ORIGEN_ESCUCHADO
+import cl.duoc.comunicaplusrs.utils.LARGO_MAXIMO_MENSAJE
 import cl.duoc.comunicaplusrs.utils.mensajeDeError
+import cl.duoc.comunicaplusrs.utils.validarMensaje
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -16,11 +20,16 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
+// En Hablar solo se muestran los últimos mensajes; el resto está en Historial.
+private const val MENSAJES_RECIENTES = 4
+
 data class HablarUiState(
     val ultimoTexto: String = "",
-    val historial: List<Mensaje> = emptyList(),
+    val recientes: List<Mensaje> = emptyList(),
     // Cuenta los textos nuevos para disparar la vibración y la alerta visual.
     val textosRecibidos: Int = 0,
+    // Aumenta cada vez que se guarda una respuesta, la pantalla lo usa para limpiar el campo.
+    val respuestasOk: Int = 0,
     val mensaje: String = "",
     val esError: Boolean = false
 )
@@ -41,12 +50,17 @@ class HablarViewModel(
                 conversacionesRepository.escuchar(uid)
                     .catch { e -> mostrarError(mensajeDeError(e)) }
                     .collect { lista ->
-                        _uiState.update { it.copy(historial = lista) }
+                        // La lista llega ordenada del más nuevo al más antiguo;
+                        // se invierte para leerla de arriba hacia abajo como un chat.
+                        _uiState.update {
+                            it.copy(recientes = lista.take(MENSAJES_RECIENTES).reversed())
+                        }
                     }
             }
         }
     }
 
+    // Solicitud: lo que dijo la otra persona.
     fun textoReconocido(texto: String) {
         if (texto.isBlank()) return
 
@@ -58,35 +72,29 @@ class HablarViewModel(
             )
         }
 
-        val uid = uid ?: return
-        viewModelScope.launch {
-            try {
-                conversacionesRepository.agregar(uid, texto)
-            } catch (e: Exception) {
-                mostrarError(mensajeDeError(e))
-            }
-        }
+        guardar(texto, ORIGEN_ESCUCHADO)
     }
 
-    fun eliminar(mensaje: Mensaje) {
-        val uid = uid ?: return
-
-        viewModelScope.launch {
-            try {
-                conversacionesRepository.eliminar(uid, mensaje.id)
-            } catch (e: Exception) {
-                mostrarError(mensajeDeError(e))
-            }
+    // Respuesta: lo que escribió el usuario y la app leyó en voz alta.
+    fun responder(texto: String) {
+        if (!validarMensaje(texto)) {
+            mostrarError("Escribe una respuesta de hasta $LARGO_MAXIMO_MENSAJE caracteres.")
+            return
         }
+
+        _uiState.update {
+            it.copy(respuestasOk = it.respuestasOk + 1, mensaje = "")
+        }
+
+        guardar(texto, ORIGEN_ESCRITO)
     }
 
-    fun borrarHistorial() {
+    private fun guardar(texto: String, origen: String) {
         val uid = uid ?: return
 
         viewModelScope.launch {
             try {
-                conversacionesRepository.eliminarTodos(uid)
-                _uiState.update { it.copy(mensaje = "Historial borrado.", esError = false) }
+                conversacionesRepository.agregar(uid, texto.trim(), origen)
             } catch (e: Exception) {
                 mostrarError(mensajeDeError(e))
             }

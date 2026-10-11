@@ -26,6 +26,16 @@ fun formatearFechaCorta(
     return formato.format(Date(millis))
 }
 
+// Solo la hora, para los mensajes del historial que ya están agrupados por día.
+fun formatearHora(
+    millis: Long,
+    zona: TimeZone = TimeZone.getDefault()
+): String {
+    val formato = SimpleDateFormat("HH:mm", LOCALE_CHILE)
+    formato.timeZone = zona
+    return formato.format(Date(millis))
+}
+
 fun formatearCoordenadas(latitud: Double, longitud: Double): String {
     return String.format(Locale.US, "%.5f, %.5f", latitud, longitud)
 }

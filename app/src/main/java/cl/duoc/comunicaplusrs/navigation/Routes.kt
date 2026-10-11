@@ -10,4 +10,11 @@ object Routes {
     const val HABLAR = "hablar"
     const val BUSCAR_DISPOSITIVO = "buscar_dispositivo"
     const val PERFIL = "perfil"
+    const val HISTORIAL = "historial"
+
+    // La ayuda recibe la sección que se quiere ver (argumento opcional).
+    const val ARG_SECCION = "seccion"
+    const val AYUDA = "ayuda?$ARG_SECCION={$ARG_SECCION}"
+
+    fun ayuda(seccion: String) = "ayuda?$ARG_SECCION=$seccion"
 }

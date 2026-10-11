@@ -8,6 +8,7 @@ import cl.duoc.comunicaplusrs.data.AuthService
 import cl.duoc.comunicaplusrs.data.MensajeRepository
 import cl.duoc.comunicaplusrs.data.ServiceLocator
 import cl.duoc.comunicaplusrs.model.Mensaje
+import cl.duoc.comunicaplusrs.model.ORIGEN_ESCRITO
 import cl.duoc.comunicaplusrs.utils.LARGO_MAXIMO_MENSAJE
 import cl.duoc.comunicaplusrs.utils.mensajeDeError
 import cl.duoc.comunicaplusrs.utils.validarMensaje
@@ -30,10 +31,14 @@ data class EscribirUiState(
 
 class EscribirViewModel(
     authService: AuthService,
-    private val frasesRepository: MensajeRepository
+    private val frasesRepository: MensajeRepository,
+    private val conversacionesRepository: MensajeRepository
 ) : ViewModel() {
 
     private val uid = authService.uidActual
+
+    // Último texto que quedó en la conversación, para no repetirlo si se toca LEER varias veces.
+    private var ultimoRegistrado = ""
 
     private val _uiState = MutableStateFlow(EscribirUiState())
     val uiState: StateFlow<EscribirUiState> = _uiState.asStateFlow()
@@ -89,6 +94,23 @@ class EscribirViewModel(
         }
     }
 
+    // Lo que se lee en voz alta o se muestra en grande también queda en el historial.
+    fun registrarEnConversacion(texto: String) {
+        val uid = uid ?: return
+        val limpio = texto.trim()
+
+        if (!validarMensaje(limpio) || limpio == ultimoRegistrado) return
+        ultimoRegistrado = limpio
+
+        viewModelScope.launch {
+            try {
+                conversacionesRepository.agregar(uid, limpio, ORIGEN_ESCRITO)
+            } catch (e: Exception) {
+                mostrarMensaje(mensajeDeError(e), esError = true)
+            }
+        }
+    }
+
     fun editar(frase: Mensaje) {
         _uiState.update { it.copy(idEditando = frase.id, mensaje = "") }
     }
@@ -119,7 +141,8 @@ class EscribirViewModel(
             initializer {
                 EscribirViewModel(
                     ServiceLocator.authService,
-                    ServiceLocator.frasesRepository
+                    ServiceLocator.frasesRepository,
+                    ServiceLocator.conversacionesRepository
                 )
             }
         }
