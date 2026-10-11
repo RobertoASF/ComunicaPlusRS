@@ -3,6 +3,7 @@ package cl.duoc.comunicaplusrs.viewmodel
 import cl.duoc.comunicaplusrs.data.AuthService
 import cl.duoc.comunicaplusrs.data.MensajeRepository
 import cl.duoc.comunicaplusrs.model.Mensaje
+import cl.duoc.comunicaplusrs.model.ORIGEN_ESCRITO
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -14,6 +15,7 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
+import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 
 class EscribirViewModelTest {
@@ -31,11 +33,13 @@ class EscribirViewModelTest {
         on { escuchar("uid-1") } doReturn flowOf(listOf(fraseGuardada))
     }
 
+    private val conversacionesRepository: MensajeRepository = mock()
+
     private lateinit var viewModel: EscribirViewModel
 
     @Before
     fun setUp() {
-        viewModel = EscribirViewModel(authService, frasesRepository)
+        viewModel = EscribirViewModel(authService, frasesRepository, conversacionesRepository)
     }
 
     @Test
@@ -56,7 +60,7 @@ class EscribirViewModelTest {
     fun fraseVacia_noSeGuarda() = runTest {
         viewModel.guardarFrase("   ")
 
-        verify(frasesRepository, never()).agregar(any(), any())
+        verify(frasesRepository, never()).agregar(any(), any(), any())
         assertEquals(0, viewModel.uiState.value.guardadosOk)
     }
 
@@ -66,7 +70,7 @@ class EscribirViewModelTest {
         viewModel.guardarFrase("Hola, soy una persona sorda")
 
         verify(frasesRepository).actualizar("uid-1", "f1", "Hola, soy una persona sorda")
-        verify(frasesRepository, never()).agregar(any(), any())
+        verify(frasesRepository, never()).agregar(any(), any(), any())
         assertNull(viewModel.uiState.value.idEditando)
     }
 
@@ -76,5 +80,20 @@ class EscribirViewModelTest {
 
         verify(frasesRepository).eliminar("uid-1", "f1")
         assertEquals("Frase eliminada.", viewModel.uiState.value.mensaje)
+    }
+
+    @Test
+    fun leerUnMensaje_quedaEnLaConversacionComoEscrito() = runTest {
+        viewModel.registrarEnConversacion("Necesito ayuda")
+
+        verify(conversacionesRepository).agregar("uid-1", "Necesito ayuda", ORIGEN_ESCRITO)
+    }
+
+    @Test
+    fun leerDosVecesLoMismo_soloSeGuardaUnaVez() = runTest {
+        viewModel.registrarEnConversacion("Necesito ayuda")
+        viewModel.registrarEnConversacion("Necesito ayuda ")
+
+        verify(conversacionesRepository, times(1)).agregar("uid-1", "Necesito ayuda", ORIGEN_ESCRITO)
     }
 }

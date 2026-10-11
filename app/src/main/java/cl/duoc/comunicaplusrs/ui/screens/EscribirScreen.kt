@@ -2,6 +2,7 @@ package cl.duoc.comunicaplusrs.ui.screens
 
 import android.content.ActivityNotFoundException
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -78,6 +79,7 @@ private val FRASES_RAPIDAS = listOf(
 @Composable
 fun EscribirScreen(
     onVolver: () -> Unit,
+    onAyuda: () -> Unit,
     viewModel: EscribirViewModel = viewModel(factory = EscribirViewModel.Factory)
 ) {
     val context = LocalContext.current
@@ -131,6 +133,8 @@ fun EscribirScreen(
             viewModel.mostrarMensaje("Primero escribe un mensaje.", esError = true)
         } else if (!lector.leer(contenido)) {
             viewModel.mostrarMensaje("La lectura en voz alta no está disponible en este teléfono.", esError = true)
+        } else {
+            viewModel.registrarEnConversacion(contenido)
         }
     }
 
@@ -138,7 +142,8 @@ fun EscribirScreen(
         topBar = {
             BarraSuperior(
                 titulo = "Escribir",
-                onVolver = onVolver
+                onVolver = onVolver,
+                onAyuda = onAyuda
             )
         }
     ) { padding ->
@@ -213,6 +218,7 @@ fun EscribirScreen(
                                 viewModel.mostrarMensaje("Primero escribe un mensaje.", esError = true)
                             } else {
                                 pantallaCompleta = true
+                                viewModel.registrarEnConversacion(texto)
                             }
                         },
                         modifier = Modifier
@@ -259,7 +265,9 @@ fun EscribirScreen(
                     }
                 }
 
-                if (uiState.idEditando != null) {
+                AnimatedVisibility(
+                    visible = uiState.idEditando != null
+                ) {
                     TextButton(
                         onClick = {
                             viewModel.cancelarEdicion()
@@ -296,6 +304,7 @@ fun EscribirScreen(
                 key = { it.id }
             ) { frase ->
                 TarjetaFrase(
+                    modifier = Modifier.animateItem(),
                     frase = frase,
                     onUsar = {
                         texto = frase.texto
@@ -348,11 +357,12 @@ private fun TarjetaFrase(
     onUsar: () -> Unit,
     onLeer: () -> Unit,
     onEditar: () -> Unit,
-    onEliminar: () -> Unit
+    onEliminar: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     OutlinedCard(
         onClick = onUsar,
-        modifier = Modifier.fillMaxWidth()
+        modifier = modifier.fillMaxWidth()
     ) {
         Row(
             modifier = Modifier.padding(start = 12.dp),
